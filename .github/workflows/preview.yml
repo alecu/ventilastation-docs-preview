@@ -1,0 +1,84 @@
+name: Publish review preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-preview
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - name: Checkout preview configuration
+        uses: actions/checkout@v5
+      - name: Checkout reviewed website and SDK
+        uses: actions/checkout@v5
+        with:
+          repository: ventilastation/website
+          ref: 2d5379750f451e35b82ef2f88ac5901a6c44c3df
+          submodules: recursive
+          path: website
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: website
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install build dependencies
+        run: python3 -m pip install -r vsdk/requirements.txt -r vsdk/docs/requirements.txt
+      - name: Configure preview Pages
+        id: pages
+        uses: actions/configure-pages@v6
+      - name: Generate emulator publish tree
+        run: make publish
+      - name: Build website for preview URL
+        env:
+          PREVIEW_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          PREVIEW_ORIGIN: ${{ steps.pages.outputs.origin }}
+        run: |
+          python3 -c 'import json, os; open("/tmp/preview-config.yml", "w").write(json.dumps({"baseurl": os.environ["PREVIEW_BASE_PATH"], "url": os.environ["PREVIEW_ORIGIN"]}))'
+          bundle exec jekyll build --config _config.yml,/tmp/preview-config.yml --destination _site --strict_front_matter
+      - name: Build shared documentation
+        env:
+          VSDK_DOCS_BASEURL: ${{ steps.pages.outputs.base_url }}/docs/
+        run: |
+          python3 -m sphinx -b html -W --keep-going vsdk/docs _site/docs
+          python3 vsdk/tools/check_docs.py _site/docs
+      - name: Check content and published files
+        run: python3 tools/test-content.py --site _site
+      - name: Keep preview navigation together
+        env:
+          PREVIEW_BASE_URL: ${{ steps.pages.outputs.base_url }}
+        run: python3 ../tools/prepare-preview.py _site
+      - name: Upload preview artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: website/_site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish preview
+        id: deployment
+        uses: actions/deploy-pages@v5
