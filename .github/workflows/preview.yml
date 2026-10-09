@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: ventilastation/website
-          ref: 615f0fe3adbea19fe902f0eca5457566fc12be5b
+          ref: a055dadd8860750686924b9b852d5bec58164874
           submodules: recursive
           path: website
       - name: Setup Ruby
@@ -60,7 +60,11 @@ jobs:
           python3 -m sphinx -b html -W --keep-going vsdk/docs _site/docs
           python3 vsdk/tools/check_docs.py _site/docs
       - name: Check content and published files
-        run: python3 tools/test-content.py --site _site
+        env:
+          PREVIEW_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          python3 tools/test-content.py --site _site
+          python3 tools/test-presentation.py --site _site --sdk vsdk --baseurl "$PREVIEW_BASE_PATH"
       - name: Keep preview navigation together
         env:
           PREVIEW_BASE_URL: ${{ steps.pages.outputs.base_url }}
