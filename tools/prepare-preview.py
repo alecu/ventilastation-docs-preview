@@ -34,9 +34,9 @@ for path in output.rglob('*.html'):
     count += 1
 (output / 'robots.txt').write_text('User-agent: *\nDisallow: ' + urlsplit(base).path + '/\n')
 (output / 'CNAME').unlink(missing_ok=True)
-for name in ('index.html', 'en/index.html', 'docs/index.html', 'emulator/index.html'):
+for name in ('index.html', 'es/index.html', 'en/index.html', 'docs/index.html', 'emulator/index.html'):
     assert (output / name).is_file(), name
-for name in ('index.html', 'en/index.html'):
+for name in ('es/index.html', 'en/index.html'):
     text = (output / name).read_text()
     assert 'href="' + prefix + '/docs/"' in text, name
     assert 'href="' + prefix + '/docs/guides/desktop.html"' in text, name
