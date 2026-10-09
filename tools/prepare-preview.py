@@ -21,13 +21,6 @@ for path in output.rglob('*.html'):
             return match.group(0)
         return name + '=' + quote + prefix + value + quote
     text = re.sub(r'''\b(href|src|action)=([\"'])(/(?!/)[^\"']*)\2''', rebase, text)
-    # The new documentation pages are still on the unmerged review branch.
-    text = text.replace('github.com/ventilastation/vsdk/blob/main/',
-                        'github.com/ventilastation/vsdk/blob/docs/unified-documentation/')
-    text = text.replace('github.com/ventilastation/vsdk/tree/main/',
-                        'github.com/ventilastation/vsdk/tree/docs/unified-documentation/')
-    text = text.replace('github.com/ventilastation/vsdk/edit/main/',
-                        'github.com/ventilastation/vsdk/edit/docs/unified-documentation/')
     if '<head>' in text:
         text = text.replace('<head>', '<head><meta name="robots" content="noindex, nofollow">', 1)
     path.write_text(text)
