@@ -33,7 +33,7 @@ for name in ('es/index.html', 'en/index.html'):
     text = (output / name).read_text()
     assert 'href="' + prefix + '/docs/"' in text, name
     assert 'href="' + prefix + '/docs/guides/desktop.html"' in text, name
-    assert 'href="' + prefix + '/emulator/"' not in text, name
+    assert 'href="' + prefix + '/emulator/"' in text, name
     assert 'href="' + prefix + '/docs/guides/browser.html"' not in text, name
     assert 'href="/docs/' not in text, name
 assert base + '/' in (output / 'docs/index.html').read_text()
