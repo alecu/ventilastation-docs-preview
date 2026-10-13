@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: ventilastation/website
-          ref: e710ac8cf112f7312d8319a2d16930477e5c4ab6
+          ref: d6759ae540787442aeed33324aab4c2120730809
           submodules: recursive
           path: website
       - name: Setup Ruby
